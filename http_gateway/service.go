@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	rpc "github.com/TheSmallBoat/carlo/rpc"
+	"github.com/TheSmallBoat/carlo/rpc"
 	"github.com/julienschmidt/httprouter"
 )
 
