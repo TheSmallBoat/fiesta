@@ -5,10 +5,11 @@ import (
 	"net/http"
 	"strings"
 
+	rpc "github.com/TheSmallBoat/carlo/rpc"
 	"github.com/julienschmidt/httprouter"
 )
 
-func Handle(node, services []string) http.Handler {
+func Handle(node *rpc.Node, services []string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		headers := make(map[string]string)
 		for key := range r.Header {
@@ -26,7 +27,7 @@ func Handle(node, services []string) http.Handler {
 
 		stream, err := node.Push(services, headers, r.Body)
 		if err != nil {
-			w.Write([]byte(err.Error()))
+			_, _ = w.Write([]byte(err.Error()))
 			return
 		}
 
