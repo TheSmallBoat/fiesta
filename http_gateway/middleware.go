@@ -1,4 +1,4 @@
-package fhttp
+package http_gateway
 
 import (
 	"net/http"

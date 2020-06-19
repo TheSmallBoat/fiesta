@@ -1,4 +1,4 @@
-package fhttp
+package http_gateway
 
 import (
 	"errors"
@@ -29,12 +29,12 @@ func (d *Duration) UnmarshalText(text []byte) error {
 }
 
 type Config struct {
-	Addr string
-	Http []ConfigHttp
+	Addr     string
+	ConfHttp []ConfigHttp `toml:"http"`
 }
 
 func (c Config) Validate() error {
-	for _, srv := range c.Http {
+	for _, srv := range c.ConfHttp {
 		err := srv.Validate()
 		if err != nil {
 			return err
@@ -73,7 +73,7 @@ type ConfigHttp struct {
 		BodySize   *int `toml:"body_size"`
 	}
 
-	Routes []ConfigRoute
+	ConfRoutes []ConfigRoute `toml:"routes"`
 }
 
 func (h ConfigHttp) GetDomains() []string {
@@ -105,7 +105,7 @@ func (h ConfigHttp) Validate() error {
 		return errors.New("'addr' and 'addrs' cannot both be non-nil at the same time")
 	}
 
-	for _, route := range h.Routes {
+	for _, route := range h.ConfRoutes {
 		err := route.Validate()
 		if err != nil {
 			return err

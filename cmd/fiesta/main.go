@@ -1,13 +1,22 @@
 package main
 
 import (
+	"crypto/tls"
+	"errors"
+
 	"io/ioutil"
 	"log"
 	"net"
+	"net/http"
+	"os"
+	"os/signal"
+	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github.com/BurntSushi/toml"
-	"github.com/TheSmallBoat/carlo/rpc"
+	sr "github.com/TheSmallBoat/carlo/streaming_rpc"
+	"github.com/TheSmallBoat/fiesta"
 	gateway "github.com/TheSmallBoat/fiesta/http_gateway"
 	"github.com/caddyserver/certmagic"
 	"github.com/julienschmidt/httprouter"
@@ -62,9 +71,169 @@ func main() {
 		}
 	}
 
-	addr := rpc.HostAddr(bindHost, bindPort)
-	node := &rpc.Node{PublicAddr: addr, SecretKey: rpc.GenerateSecretKey()}
-	check(node)
+	addr := sr.HostAddr(bindHost, bindPort)
+	node := &fiesta.Node{PublicAddr: addr}
+	check(node.Start(sr.GenerateSecretKey(), nil))
 	defer node.Shutdown()
 
+	for _, cfg := range cfg.ConfHttp {
+		router := httprouter.New()
+
+		if cfg.RedirectTrailingSlash != nil {
+			router.RedirectTrailingSlash = *cfg.RedirectTrailingSlash
+		}
+
+		if cfg.RedirectFixedPath != nil {
+			router.RedirectFixedPath = *cfg.RedirectFixedPath
+		}
+
+		for _, confRoute := range cfg.ConfRoutes {
+			fields := strings.Fields(confRoute.Path)
+			services := confRoute.GetServices()
+
+			var handler http.Handler
+
+			switch {
+			case confRoute.Static != "":
+				static := confRoute.Static
+
+				info, err := os.Lstat(static)
+				check(err)
+
+				if info.IsDir() {
+					if fields[1] == "/" {
+						router.NotFound = http.FileServer(http.Dir(static))
+					} else {
+						if info.IsDir() && !strings.HasPrefix(fields[1], "/*filepath") {
+							fields[1] = filepath.Join(fields[1], "/*filepath")
+						}
+						router.ServeFiles(fields[1], http.Dir(static))
+					}
+				} else {
+					handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+						http.ServeFile(w, r, static)
+					})
+				}
+			case len(services) > 0:
+				handler = gateway.Handle(node, services)
+			}
+
+			if handler != nil {
+				if confRoute.NoCache {
+					handler = gateway.NoCache(handler)
+				}
+				router.Handler(fields[0], fields[1], handler)
+			}
+		}
+
+		srv := &http.Server{
+			Handler:           router,
+			ReadTimeout:       cfg.Timeout.Read.Duration,
+			ReadHeaderTimeout: cfg.Timeout.ReadHeader.Duration,
+			IdleTimeout:       cfg.Timeout.Idle.Duration,
+			WriteTimeout:      cfg.Timeout.Write.Duration,
+			MaxHeaderBytes:    cfg.Max.HeaderSize,
+		}
+
+		defer func() {
+			check(srv.Close())
+		}()
+
+		addrs := cfg.GetAddrs()
+
+		if cfg.EnableHttps {
+			magic := certmagic.NewDefault()
+			check(magic.ManageSync(cfg.GetDomains()))
+
+			acme := certmagic.NewACMEManager(magic, certmagic.DefaultACME)
+			srv.Handler = acme.HTTPChallengeHandler(srv.Handler)
+
+			redirect := &http.Server{
+				Handler: acme.HTTPChallengeHandler(
+					http.HandlerFunc(
+						func(w http.ResponseWriter, r *http.Request) {
+							toURL := "https://"
+
+							requestHost := hostOnly(r.Host)
+
+							toURL += requestHost
+							toURL += r.URL.RequestURI()
+
+							w.Header().Set("Connection", "close")
+
+							http.Redirect(w, r, toURL, http.StatusMovedPermanently)
+						},
+					),
+				),
+				ReadTimeout:       cfg.Timeout.Read.Duration,
+				ReadHeaderTimeout: cfg.Timeout.ReadHeader.Duration,
+				IdleTimeout:       cfg.Timeout.Idle.Duration,
+				WriteTimeout:      cfg.Timeout.Write.Duration,
+				MaxHeaderBytes:    cfg.Max.HeaderSize,
+			}
+
+			defer func() {
+				check(redirect.Close())
+			}()
+
+			for _, addr := range addrs {
+				addr := addr
+
+				go func() {
+					bindAddr := addr
+
+					ln, err := tls.Listen("tcp", bindAddr, magic.TLSConfig())
+					check(err)
+
+					log.Printf("Listening for HTTPS on '%s'.", ln.Addr().String())
+
+					err = srv.Serve(ln)
+					if !errors.Is(err, http.ErrServerClosed) {
+						check(err)
+					}
+				}()
+
+				go func() {
+					redirectAddr := addr
+
+					host, _, err := net.SplitHostPort(redirectAddr)
+					if err == nil {
+						redirectAddr = net.JoinHostPort(host, "80")
+					} else {
+						redirectAddr = net.JoinHostPort(redirectAddr, "80")
+					}
+
+					ln, err := net.Listen("tcp", redirectAddr)
+					check(err)
+
+					log.Printf("Redirecting HTTP->HTTPS on '%s'.", ln.Addr().String())
+
+					err = redirect.Serve(ln)
+					if !errors.Is(err, http.ErrServerClosed) {
+						check(err)
+					}
+				}()
+			}
+		} else {
+			for _, addr := range addrs {
+				addr := addr
+
+				go func() {
+					ln, err := net.Listen("tcp", addr)
+					check(err)
+
+					log.Printf("Listening for HTTP requests on '%s'.", ln.Addr().String())
+
+					err = srv.Serve(ln)
+					if !errors.Is(err, http.ErrServerClosed) {
+						check(err)
+					}
+				}()
+			}
+		}
+	}
+
+	ch := make(chan os.Signal, 1)
+	signal.Notify(ch, os.Interrupt)
+	<-ch
 }
