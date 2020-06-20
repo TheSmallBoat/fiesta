@@ -1,12 +1,14 @@
 before:
   hooks:
-    - go mod download
+    - go mod tidy
 builds:
   - main: ./cmd/fiesta/
     id: "fiesta"
     binary: fiesta
     env:
       - CGO_ENABLED=0
+    ldflags:
+      - -s -w
     goos:
       - darwin
       - linux
@@ -20,6 +22,11 @@ builds:
     goarm:
       - 6
       - 7
+archives:
+  - replacements:
+      darwin: Darwin
+      linux: Linux
+      amd64: x86_64
 checksum:
   name_template: 'checksums.txt'
 snapshot:
@@ -30,3 +37,7 @@ changelog:
     exclude:
       - '^docs:'
       - '^test:'
+release:
+  github:
+    owner: TheSmallBoat
+    name: fiesta
