@@ -11,12 +11,12 @@ $ fiesta
 $ go run main.go 
 2020/06/17 02:13:00 You are now connected to 127.0.0.1:9000. Services: []
 
-$ http://localhost:3000
+$ curl http://localhost:3000
 0
 
-$ http://localhost:3000
+$ curl http://localhost:3000
 1
 
-$ http://localhost:3000
+$ curl http://localhost:3000
 2
 ```

@@ -27,7 +27,7 @@ func main() {
 	}
 
 	node := &fiesta.Node{}
-	check(node.Start(sr.GenerateSecretKey(), services, "127.0.0.1:9000"))
+	check(node.StartWithKeyAndServiceAndProbeAddrs(sr.GenerateSecretKey(), services, "127.0.0.1:9000"))
 
 	ch := make(chan os.Signal, 1)
 	signal.Notify(ch, os.Interrupt)
