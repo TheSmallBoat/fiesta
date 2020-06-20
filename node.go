@@ -2,12 +2,12 @@ package fiesta
 
 import (
 	"fmt"
+	sr "github.com/TheSmallBoat/carlo/streaming_rpc"
+	"github.com/lithdew/kademlia"
 	"log"
 	"math"
 	"net"
-
-	sr "github.com/TheSmallBoat/carlo/streaming_rpc"
-	"github.com/lithdew/kademlia"
+	"sync"
 )
 
 type Node struct {
@@ -16,9 +16,11 @@ type Node struct {
 	lns        []net.Listener
 
 	StreamNode *sr.StreamNode
+
+	wg sync.WaitGroup
 }
 
-func (n *Node) Start(sk kademlia.PrivateKey, services map[string]sr.Handler, probeAddrs ...string) error {
+func (n *Node) StartWithKeyAndServiceAndProbeAddrs(sk kademlia.PrivateKey, services map[string]sr.Handler, probeAddrs ...string) error {
 	var (
 		bindHost net.IP
 		bindPort uint16
@@ -73,23 +75,22 @@ func (n *Node) Start(sk kademlia.PrivateKey, services map[string]sr.Handler, pro
 	if services != nil {
 		n.StreamNode.Services = services
 	}
-
 	err := n.StreamNode.Start()
 	if err != nil {
 		return err
 	}
 
-	if n.StreamNode.KadId != nil && n.StreamNode.NetProtocol == sr.NetProtocolTCP && len(n.BindAddrs) == 0 {
-		ln, err := BindTCP(sr.HostAddr(n.StreamNode.KadId.Host, n.StreamNode.KadId.Port))()
+	if kid != nil && n.StreamNode.NetProtocol == sr.NetProtocolTCP && len(n.BindAddrs) == 0 {
+		ln, err := BindTCP(sr.HostAddr(kid.Host, kid.Port))()
 		if err != nil {
 			return err
 		}
 
 		log.Printf("Listening for Fiesta nodes on '%s'.", ln.Addr().String())
 
-		n.StreamNode.Wg.Add(1)
+		n.wg.Add(1)
 		go func() {
-			defer n.StreamNode.Wg.Done()
+			defer n.wg.Done()
 			_ = n.StreamNode.Srv.Serve(ln)
 		}()
 
@@ -107,9 +108,9 @@ func (n *Node) Start(sk kademlia.PrivateKey, services map[string]sr.Handler, pro
 
 		log.Printf("Listening for Fiesta nodes on '%s'.", ln.Addr().String())
 
-		n.StreamNode.Wg.Add(1)
+		n.wg.Add(1)
 		go func() {
-			defer n.StreamNode.Wg.Done()
+			defer n.wg.Done()
 			_ = n.StreamNode.Srv.Serve(ln)
 		}()
 
@@ -134,4 +135,5 @@ func (n *Node) Shutdown() {
 	for _, ln := range n.lns {
 		_ = ln.Close()
 	}
+	n.wg.Wait()
 }
