@@ -2,12 +2,13 @@ package fiesta
 
 import (
 	"fmt"
-	sr "github.com/TheSmallBoat/carlo/streaming_rpc"
-	"github.com/lithdew/kademlia"
 	"log"
 	"math"
 	"net"
 	"sync"
+
+	sr "github.com/TheSmallBoat/carlo/streaming_rpc"
+	"github.com/lithdew/kademlia"
 )
 
 type Node struct {
