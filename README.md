@@ -24,6 +24,7 @@ $ go run main.go  (in fiesta/examples/counter) or ./fiesta/examples/counter/coun
 2020/06/17 02:13:00 You are now connected to 127.0.0.1:9000. Services: []
 
 ### Step 3
+```
 $ curl http://localhost:3000
 0
 
@@ -32,3 +33,4 @@ $ curl http://localhost:3000
 
 $ curl http://localhost:3000
 2
+```
