@@ -8,11 +8,10 @@ Thanks to Kenta Iwasaki for his excellent work.
 
 
 ## More
-[examples](https://github.com/TheSmallBoat/fiesta/tree/master/examples)
+[examples: counter,file,hello_world,pipe](https://github.com/TheSmallBoat/fiesta/tree/master/examples)
 
 
-## How to run
-count service example
+## How to run count service example
 
 ### Step 1
 $ ./fiesta -c ./examples/counter/config.toml (in fiesta folder)
