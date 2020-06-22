@@ -12,9 +12,19 @@ import (
 )
 
 type Node struct {
+	// A reachable, public address which peers may reach you on.
+	// The format of the address must be [host]:[port].
 	PublicAddr string
-	BindAddrs  []BindFunc
-	lns        []net.Listener
+
+	// A list of addresses and ports assembled using:
+	// 1. fiesta.BindAny() (bind to all hosts and any available port)
+	// 2. fiesta.BindTCP(string) (binds to a [host]:[port])
+	// 3. fiesta.BindTCPv4(string) (binds to an [IPv4 host]:[port])
+	// 4. fiesta.BindTCPv6(string) (binds to an [IPv6 host]:[port])
+	// which your fiesta node will listen for other nodes from.
+	BindAddrs []BindFunc
+
+	lns []net.Listener
 
 	StreamNode *sr.StreamNode
 
