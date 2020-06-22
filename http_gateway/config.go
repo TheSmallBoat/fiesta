@@ -18,6 +18,8 @@ var HttpMethods = map[string]struct{}{
 	http.MethodPatch:  {},
 }
 
+const DefaultShutdownTimeout = 10 * time.Second
+
 type Duration struct {
 	time.Duration
 }
@@ -74,6 +76,13 @@ type ConfigHttp struct {
 	}
 
 	ConfRoutes []ConfigRoute `toml:"routes"`
+}
+
+func (h ConfigHttp) GetShutdownTimeout() time.Duration {
+	if h.Timeout.Shutdown.Duration < 0 {
+		return DefaultShutdownTimeout
+	}
+	return h.Timeout.Shutdown.Duration
 }
 
 func (h ConfigHttp) GetDomains() []string {
