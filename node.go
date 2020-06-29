@@ -16,13 +16,9 @@ type Node struct {
 	// The format of the address must be [host]:[port].
 	PublicAddr string
 
-	// A list of addresses and ports assembled using:
-	// 1. fiesta.BindAny() (bind to all hosts and any available port)
-	// 2. fiesta.BindTCP(string) (binds to a [host]:[port])
-	// 3. fiesta.BindTCPv4(string) (binds to an [IPv4 host]:[port])
-	// 4. fiesta.BindTCPv6(string) (binds to an [IPv6 host]:[port])
-	// which your fiesta node will listen for other nodes from.
-	BindAddrs []BindFunc
+	// A list of IPv4/IPv6 addresses and ports assembled as [host]:[port] which
+	// your fiesta node will listen for other nodes from.
+	BindAddrs []string
 
 	lns []net.Listener
 
@@ -33,8 +29,8 @@ type Node struct {
 
 func (n *Node) StartWithKeyAndServiceAndProbeAddrs(sk kademlia.PrivateKey, services map[string]sr.Handler, probeAddrs ...string) error {
 	var (
-		bindHost net.IP
-		bindPort uint16
+		publicHost net.IP
+		publicPort uint16
 
 		kid *kademlia.ID
 		tab *kademlia.Table
@@ -47,33 +43,34 @@ func (n *Node) StartWithKeyAndServiceAndProbeAddrs(sk kademlia.PrivateKey, servi
 				return err
 			}
 
-			bindHost = addr.IP
-			if bindHost == nil {
-				return fmt.Errorf("'%s' is an invalid host: it must be an IPv4 or IPv6 address", addr.IP)
-			}
+			publicHost = addr.IP
 
 			if addr.Port <= 0 || addr.Port >= math.MaxUint16 {
 				return fmt.Errorf("'%d' is an invalid port", addr.Port)
 			}
 
-			bindPort = uint16(addr.Port)
+			publicPort = uint16(addr.Port)
 		} else { // get a random public address
 			ln, err := net.Listen("tcp", ":0")
 			if err != nil {
 				return fmt.Errorf("unable to listen on any port: %w", err)
 			}
 			bindAddr := ln.Addr().(*net.TCPAddr)
-			bindHost = bindAddr.IP
-			bindPort = uint16(bindAddr.Port)
+			publicHost = bindAddr.IP
+			publicPort = uint16(bindAddr.Port)
 			if err := ln.Close(); err != nil {
 				return fmt.Errorf("failed to close listener for getting avaialble port: %w", err)
 			}
 		}
 
+		if publicHost == nil {
+			publicHost = net.ParseIP("0.0.0.0")
+		}
+
 		kid = &kademlia.ID{
 			Pub:  sk.Public(),
-			Host: bindHost,
-			Port: bindPort,
+			Host: publicHost,
+			Port: publicPort,
 		}
 
 		tab = kademlia.NewTable(kid.Pub)
@@ -92,7 +89,7 @@ func (n *Node) StartWithKeyAndServiceAndProbeAddrs(sk kademlia.PrivateKey, servi
 	}
 
 	if kid != nil && n.StreamNode.NetProtocol == sr.NetProtocolTCP && len(n.BindAddrs) == 0 {
-		ln, err := BindTCP(sr.HostAddr(kid.Host, kid.Port))()
+		ln, err := net.Listen("tcp", sr.HostAddr(kid.Host, kid.Port))
 		if err != nil {
 			return err
 		}
@@ -108,8 +105,8 @@ func (n *Node) StartWithKeyAndServiceAndProbeAddrs(sk kademlia.PrivateKey, servi
 		n.lns = append(n.lns, ln)
 	}
 
-	for _, fn := range n.BindAddrs {
-		ln, err := fn()
+	for _, addr := range n.BindAddrs {
+		ln, err := net.Listen("tcp", addr)
 		if err != nil {
 			for _, ln := range n.lns {
 				_ = ln.Close()
