@@ -27,7 +27,7 @@ func clock(ctx *sr.Context) {
 	ours := latest.Format(time.Stamp)
 
 	timestamp, err := ioutil.ReadAll(ctx.Body)
-	if err != nil && !errors.Is(err, io.ErrClosedPipe) {
+	if err != nil {
 		return
 	}
 
