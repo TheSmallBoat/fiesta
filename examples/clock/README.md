@@ -8,7 +8,7 @@ Watch nodes randomly query and respond to each others requests regarding their c
 
 ```
 [terminal 1] $ go run main.go
-2020/06/18 00:06:56 Listening for Flatend nodes on '127.0.0.1:9000'.
+2020/06/18 00:06:56 Listening for Fiesta nodes on '127.0.0.1:9000'.
 2020/06/18 00:06:57 [::]:44369 has connected. Services: [clock]
 Got someone's time ('Jun 18 00:06:57')! Sent back ours ('Jun 18 00:06:57').
 2020/06/18 00:06:57 [::]:45309 has connected. Services: [clock]
@@ -20,7 +20,7 @@ Got someone's time ('Jun 18 00:06:57')! Sent back ours ('Jun 18 00:06:57').
 [3] Asked someone for their current time. Ours is 'Jun 18 00:06:58'.
 
 [terminal 2] $ go run main.go clock
-2020/06/18 00:06:57 Listening for Flatend nodes on '[::]:44369'.go clock
+2020/06/18 00:06:57 Listening for Fiesta nodes on '[::]:44369'.go clock
 2020/06/18 00:06:57 You are now connected to 127.0.0.1:9000. Services: [clock]
 2020/06/18 00:06:57 Re-probed 127.0.0.1:9000. Services: [clock]
 2020/06/18 00:06:57 Discovered 0 peer(s).
@@ -38,7 +38,7 @@ Got someone's time ('Jun 18 00:06:58')! Sent back ours ('Jun 18 00:06:58').
 [3] Got a response! Their current time is: 'Jun 18 00:06:58'.
 
 [terminal 3] $ go run main.go clock
-2020/06/18 00:06:57 Listening for Flatend nodes on '[::]:45309'.go clock
+2020/06/18 00:06:57 Listening for Fiesta nodes on '[::]:45309'.go clock
 2020/06/18 00:06:57 You are now connected to 127.0.0.1:9000. Services: [clock]
 2020/06/18 00:06:57 Re-probed 127.0.0.1:9000. Services: [clock]
 2020/06/18 00:06:57 You are now connected to [::]:44369. Services: [clock]
