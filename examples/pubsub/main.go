@@ -86,7 +86,7 @@ func subscribeHandler(ctx *sr.Context) {
 		key := fmt.Sprintf("%s_%s", topic, ctx.KadId.Pub.String())
 		_, exist := topicSubscriber[key]
 		if !exist {
-			topicSubscriber[key] = func() {}
+			topicSubscriber[key] = func() { fmt.Print("... exec a operation,such as forward\n") }
 		}
 
 		if ctx.Headers[QosHeader] == "1" {
