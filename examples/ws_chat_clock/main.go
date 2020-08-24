@@ -27,7 +27,7 @@ func clock(ctx *sr.Context) {
 		return
 	}
 
-	fmt.Printf("Got (%s:%d)'s time ('%s')! Sent back ours ('%s').\n", ctx.KadId.Host.String(), ctx.KadId.Port, string(timestamp), ours)
+	fmt.Printf("Clock Service => Got (%s:%d)'s time ('%s')! Sent back ours ('%s').\n", ctx.KadId.Host.String(), ctx.KadId.Port, string(timestamp), ours)
 
 	ctx.Write([]byte(ours))
 }
@@ -37,7 +37,7 @@ func chat(ctx *sr.Context) {
 	if err != nil {
 		return
 	}
-	fmt.Printf("Got '%s' from %s:%d!\n", string(buf), ctx.KadId.Host.String(), ctx.KadId.Port)
+	fmt.Printf("Chat Service => Got '%s' from %s:%d!\n", string(buf), ctx.KadId.Host.String(), ctx.KadId.Port)
 }
 
 func main() {
