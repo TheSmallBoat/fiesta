@@ -120,6 +120,9 @@ func main() {
 			}
 
 			if handler != nil {
+				if confRoute.WebSocket {
+					handler = gateway.WsHandler(handler)
+				}
 				if confRoute.NoCache {
 					handler = gateway.NoCache(handler)
 				}

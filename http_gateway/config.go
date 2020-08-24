@@ -131,7 +131,8 @@ type ConfigRoute struct {
 	Service  string
 	Services []string
 
-	NoCache bool
+	NoCache   bool
+	WebSocket bool
 
 	Min struct {
 		BodySize *int `toml:"body_size"`
