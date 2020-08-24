@@ -8,11 +8,11 @@ path = "GET /"
 static = "./public"
 
 [[http.routes]]
-websocket = true
+enablewebsocket = true
+nocache = true
 path = "GET /ws/chat"
 service = "chat"
 
 [[http.routes]]
-websocket = false
 path = "GET /clock"
 service = "clock"

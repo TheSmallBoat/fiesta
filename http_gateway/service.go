@@ -14,20 +14,53 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-var upgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
-}
+var upgrader = websocket.Upgrader{} // use default options
+
+/*
+func WebSocketHandle(w http.ResponseWriter, r *http.Request) {
+	c, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Print("upgrade:", err)
+		return
+	}
+	defer c.Close()
+	for {
+		mt, message, err := c.ReadMessage()
+		if err != nil {
+			log.Println("read:", err)
+			break
+		}
+		log.Printf("recv: %s", message)
+		err = c.WriteMessage(mt, message)
+		if err != nil {
+			log.Println("write:", err)
+			break
+		}
+	}
+} */
 
 func Handle(node *fiesta.Node, services []string, enableWS bool) http.Handler {
-	if enableWS {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		headers := make(map[string]string)
+		for key := range r.Header {
+			headers[strings.ToLower(key)] = r.Header.Get(key)
+		}
+
+		for key := range r.URL.Query() {
+			headers["query."+strings.ToLower(key)] = r.URL.Query().Get(key)
+		}
+
+		params := httprouter.ParamsFromContext(r.Context())
+		for _, param := range params {
+			headers["params."+strings.ToLower(param.Key)] = param.Value
+		}
+
+		if enableWS {
 			conn, err := upgrader.Upgrade(w, r, nil)
 			if err != nil {
-				_, _ = w.Write([]byte(err.Error()))
+				log.Print("upgrade:", err)
 				return
 			}
-
 			defer conn.Close()
 
 			for {
@@ -38,15 +71,15 @@ func Handle(node *fiesta.Node, services []string, enableWS bool) http.Handler {
 				}
 				log.Printf("websocket recv: %s", message)
 
-				stream, err := node.StreamNode.Push(services, nil, ioutil.NopCloser(bytes.NewReader(message)))
+				stream, err := node.StreamNode.Push(services, headers, ioutil.NopCloser(bytes.NewReader(message)))
 				if err != nil {
 					log.Println("write:", err)
-					return
+					break
 				}
 				res, err := ioutil.ReadAll(stream.Reader)
 				if err != nil {
 					log.Println("write:", err)
-					return
+					break
 				}
 				err = conn.WriteMessage(mt, res)
 				if err != nil {
@@ -54,23 +87,7 @@ func Handle(node *fiesta.Node, services []string, enableWS bool) http.Handler {
 					break
 				}
 			}
-		})
-	} else {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			headers := make(map[string]string)
-			for key := range r.Header {
-				headers[strings.ToLower(key)] = r.Header.Get(key)
-			}
-
-			for key := range r.URL.Query() {
-				headers["query."+strings.ToLower(key)] = r.URL.Query().Get(key)
-			}
-
-			params := httprouter.ParamsFromContext(r.Context())
-			for _, param := range params {
-				headers["params."+strings.ToLower(param.Key)] = param.Value
-			}
-
+		} else {
 			timestamp := time.Now().Format(time.Stamp)
 			body := ioutil.NopCloser(strings.NewReader(timestamp))
 			streamClock, err := node.StreamNode.Push(services, headers, body)
@@ -84,6 +101,6 @@ func Handle(node *fiesta.Node, services []string, enableWS bool) http.Handler {
 			}
 
 			_, _ = io.Copy(w, streamClock.Reader)
-		})
-	}
+		}
+	})
 }
