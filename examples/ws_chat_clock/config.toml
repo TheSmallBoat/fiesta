@@ -1,0 +1,18 @@
+addr = "127.0.0.1:9000"
+
+[[http]]
+addr = ":3000"
+
+[[http.routes]]
+path = "GET /"
+static = "./public"
+
+[[http.routes]]
+websocket = true
+path = "GET /ws/chat"
+service = "chat"
+
+[[http.routes]]
+websocket = false
+path = "GET /clock"
+service = "clock"
