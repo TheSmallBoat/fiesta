@@ -18,37 +18,36 @@ func check(err error) {
 	}
 }
 
-func clock(ctx *sr.Context) {
-	latest := time.Now()
-	ours := latest.Format(time.Stamp)
-
-	timestamp, err := ioutil.ReadAll(ctx.Body)
-	if err != nil {
-		return
-	}
-
-	fmt.Printf("Clock Service => Got (%s:%d)'s time ('%s')! Sent back ours ('%s').\n", ctx.KadId.Host.String(), ctx.KadId.Port, string(timestamp), ours)
-
-	ctx.Write([]byte(ours))
-}
-
-func chat(ctx *sr.Context) {
-	buf, err := ioutil.ReadAll(ctx.Body)
-	if err != nil {
-		return
-	}
-	fmt.Printf("Chat Service => Got '%s' from %s:%d!\n", string(buf), ctx.KadId.Host.String(), ctx.KadId.Port)
-}
-
 func main() {
 	var listenAddr string
 	flag.StringVar(&listenAddr, "l", ":9000", "address to listen for peers on")
 	flag.Parse()
 
-	services := map[string]sr.Handler{"clock": clock, "chat": chat}
 	node := &fiesta.Node{PublicAddr: listenAddr, BindAddrs: []string{listenAddr}}
 	defer node.Shutdown()
 
+	services := map[string]sr.Handler{
+		"clock": func(ctx *sr.Context) {
+			latest := time.Now()
+			ours := latest.Format(time.Stamp)
+
+			timestamp, err := ioutil.ReadAll(ctx.Body)
+			if err != nil {
+				return
+			}
+			kid := node.StreamNode.KadId
+			fmt.Printf("Clock Service => Got (%s:%d)'s time ('%s')! Sent back ours ('%s').\n", ctx.KadId.Host.String(), ctx.KadId.Port, timestamp, ours)
+			ctx.Write([]byte(fmt.Sprintf("Clock '%s' From %s(%s:%d)", ours, kid.Pub.String(), kid.Host.String(), kid.Port)))
+		},
+		"chat": func(ctx *sr.Context) {
+			buf, err := ioutil.ReadAll(ctx.Body)
+			if err != nil {
+				return
+			}
+			kid := node.StreamNode.KadId
+			fmt.Printf("Chat Service => Got '%s' from %s:%d!\n", buf, ctx.KadId.Host.String(), ctx.KadId.Port)
+			ctx.Write([]byte(fmt.Sprintf("Echo %s From %s(%s:%d)", buf, kid.Pub.String(), kid.Host.String(), kid.Port)))
+		}}
 	check(node.StartWithKeyAndServiceAndProbeAddrs(sr.GenerateSecretKey(), services, flag.Args()...))
 
 	ch := make(chan os.Signal, 1)
