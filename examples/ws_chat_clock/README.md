@@ -96,3 +96,9 @@ $ close terminal 3
 $ close terminal 2
 $ close terminal 1 
 ```
+
+If you have different IP addresses on different machines to run this example, 
+please use the same port, such as 9000.
+
+The screen recording of this example:
+https://drive.google.com/file/d/1j-b-Vm_phec8gn0Ohy0fNXxnB9mr7-po/view?usp=sharing
