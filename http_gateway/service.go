@@ -48,20 +48,23 @@ func Handle(node *fiesta.Node, services []string, enableWS bool) http.Handler {
 				}
 				log.Printf("websocket recv: %s", message)
 
-				stream, err := node.StreamNode.Push(services, headers, ioutil.NopCloser(bytes.NewReader(message)))
-				if err != nil {
-					log.Println("write:", err)
-					break
-				}
-				res, err := ioutil.ReadAll(stream.Reader)
-				if err != nil {
-					log.Println("write:", err)
-					break
-				}
-				err = conn.WriteMessage(mt, res)
-				if err != nil {
-					log.Println("write:", err)
-					break
+				providers := node.StreamNode.ProvidersFor(services...)
+				for _, provider := range providers {
+					stream, err := provider.Push(services, headers, ioutil.NopCloser(bytes.NewReader(message)))
+					if err != nil {
+						log.Println("write:", err)
+						break
+					}
+					res, err := ioutil.ReadAll(stream.Reader)
+					if err != nil {
+						log.Println("write:", err)
+						break
+					}
+					err = conn.WriteMessage(mt, res)
+					if err != nil {
+						log.Println("write:", err)
+						break
+					}
 				}
 			}
 		} else {
