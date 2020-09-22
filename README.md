@@ -38,3 +38,8 @@ $ curl http://localhost:3000
 $ curl http://localhost:3000
 2
 ```
+
+
+## More Test Case
+
+please visit the [chat example over websocket](https://github.com/TheSmallBoat/fiesta/blob/master/examples/ws_chat_clock/README.md)

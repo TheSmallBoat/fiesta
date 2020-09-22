@@ -129,6 +129,7 @@ And visit chat_demo: http://178.128.227.19/ (input some message to echo it from 
 
 ## Test gateway on the local machine
 External peer-nodes cannot actively connect to intranet peer-nodes.
+
 Please use this new version (haven't release after v0.0.4) on the cmd/fiesta/:
 ```
 ../../cmd/fiesta/fiesta_osx -c config_test.toml
