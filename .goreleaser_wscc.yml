@@ -1,11 +1,10 @@
-
 before:
   hooks:
     - go mod tidy
 builds:
-  - main: ./cmd/fiesta/
-    id: "fiesta"
-    binary: fiesta
+  - main: ./examples/ws_chat_clock/
+    id: "wscc"
+    binary: wscc
     env:
       - CGO_ENABLED=0
     ldflags:
