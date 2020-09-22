@@ -106,7 +106,7 @@ https://drive.google.com/file/d/1j-b-Vm_phec8gn0Ohy0fNXxnB9mr7-po/view?usp=shari
 
 ## Test case supported by external network nodes
 
-To start peer nodes on the local machince:
+To start peer nodes on the local machine:
 ```
 ./ws_chat -l :9988 178.128.227.19:9966 192.81.214.235:9966
 
@@ -120,8 +120,32 @@ Clock Service => Got (178.128.227.19:9966)'s time ('Sep 22 13:57:11')! Sent back
 Chat Service => Got 'test' from 178.128.227.19:9966!
 Chat Service => Got 'hhha' from 178.128.227.19:9966!
 
-... ... ...
+... ... ... ...
+
 ```
 
 please visit gateway:  http://178.128.227.19/clock (Please refresh many times to get the different information)
 And visit chat_demo: http://178.128.227.19/ (input some message to echo it from other peers)
+
+## Test gateway on the local machine
+External peer-nodes cannot actively connect to intranet peer-nodes.
+Please use this new version (haven't release after v0.0.4) on the cmd/fiesta/:
+```
+../../cmd/fiesta/fiesta_osx -c config_test.toml
+2020/09/23 02:43:11 Listening for Fiesta nodes on '127.0.0.1:9000'.
+2020/09/23 02:43:11 You are now connected to 0.0.0.0:9988. Services: [clock chat]
+2020/09/23 02:43:12 You are now connected to 0.0.0.0:9967. Services: [clock chat]
+2020/09/23 02:43:13 You are now connected to 0.0.0.0:9966. Services: [chat clock]
+2020/09/23 02:43:14 You are now connected to 0.0.0.0:9967. Services: [clock chat]
+2020/09/23 02:43:14 You are now connected to 0.0.0.0:9968. Services: [chat clock]
+2020/09/23 02:43:15 You are now connected to 0.0.0.0:9969. Services: [chat clock]
+2020/09/23 02:43:15 You are now connected to 0.0.0.0:9988. Services: [chat clock]
+2020/09/23 02:43:16 You are now connected to 178.128.227.19:9966. Services: []
+2020/09/23 02:43:17 Discovered 10 peer(s).
+2020/09/23 02:43:17 Listening for HTTP requests on '[::]:80'.
+2020/09/23 02:43:26 websocket recv: tttt
+... ... ... ...
+
+```
+
+Then please visit: http://127.0.0.1/clock and http://178.128.227.19/
