@@ -102,3 +102,26 @@ please use the same port, such as 9000.
 
 The screen recording of this example:
 https://drive.google.com/file/d/1j-b-Vm_phec8gn0Ohy0fNXxnB9mr7-po/view?usp=sharing
+
+
+## Test case supported by external network nodes
+
+To start peer nodes on the local machince:
+```
+./ws_chat -l :9988 178.128.227.19:9966 192.81.214.235:9966
+
+2020/09/23 01:56:40 Listening for Fiesta nodes on '[::]:9988'.
+2020/09/23 01:56:41 You are now connected to 178.128.227.19:9966. Services: []
+2020/09/23 01:56:42 You are now connected to 0.0.0.0:9966. Services: [clock chat]
+2020/09/23 01:56:42 Re-probed 178.128.227.19:9966. Services: []
+2020/09/23 01:56:42 Discovered 13 peer(s).
+Clock Service => Got (178.128.227.19:9966)'s time ('Sep 22 13:56:52')! Sent back ours ('Sep 23 01:56:52').
+Clock Service => Got (178.128.227.19:9966)'s time ('Sep 22 13:57:11')! Sent back ours ('Sep 23 01:57:11').
+Chat Service => Got 'test' from 178.128.227.19:9966!
+Chat Service => Got 'hhha' from 178.128.227.19:9966!
+
+... ... ...
+```
+
+please visit gateway:  http://178.128.227.19/clock (Please refresh many times to get the different information)
+And visit chat_demo: http://178.128.227.19/ (input some message to echo it from other peers)
