@@ -1,0 +1,60 @@
+before:
+  hooks:
+    - go mod tidy
+builds:
+  - binary: fiesta
+    id: "fiesta"
+    main: ./cmd/fiesta/main.go
+    env:
+      - CGO_ENABLED=0
+    ldflags:
+      - -s -w
+    goos:
+      - windows
+      - darwin
+      - linux
+      - freebsd
+    goarch:
+      - amd64
+      - 386
+      - arm
+      - arm64
+    goarm:
+      - 6
+      - 7
+  - binary: ws_chat
+    id: "ws_chat"
+    main: ./examples/ws_chat_clock/main.go
+    env:
+      - CGO_ENABLED=0
+    ldflags:
+      - -s -w
+    goos:
+      - windows
+      - darwin
+      - linux
+      - freebsd
+    goarch:
+      - amd64
+      - 386
+      - arm
+      - arm64
+    goarm:
+      - 6
+      - 7
+archives:
+  - replacements:
+      darwin: Darwin
+      linux: Linux
+      windows: Windows
+      386: i386
+      amd64: x86_64
+    format_overrides:
+    - goos: windows
+      format: zip
+checksum:
+  name_template: 'checksums.txt'
+release:
+  github:
+    owner: TheSmallBoat
+    name: fiesta
