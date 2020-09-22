@@ -74,7 +74,7 @@ func main() {
 	addr := sr.HostAddr(bindHost, bindPort)
 	node := &fiesta.Node{PublicAddr: addr}
 
-	check(node.StartWithKeyAndServiceAndProbeAddrs(sr.GenerateSecretKey(), nil))
+	check(node.StartWithKeyAndServiceAndProbeAddrs(sr.GenerateSecretKey(), nil, cfg.Addrs...))
 	defer node.Shutdown()
 
 	for _, cfg := range cfg.ConfHttp {

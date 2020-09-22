@@ -32,6 +32,7 @@ func (d *Duration) UnmarshalText(text []byte) error {
 
 type Config struct {
 	Addr     string
+	Addrs    []string
 	ConfHttp []ConfigHttp `toml:"http"`
 }
 

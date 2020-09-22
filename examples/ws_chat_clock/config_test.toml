@@ -1,0 +1,19 @@
+addr = "127.0.0.1:9000"
+addrs = ["127.0.0.1:9988","178.128.227.19:9967","192.81.214.235:9966","192.81.214.235:9967","192.81.214.235:9968","192.81.214.235:9969"]
+
+[[http]]
+addr = ":80"
+
+[[http.routes]]
+path = "GET /"
+static = "./public"
+
+[[http.routes]]
+enablewebsocket = true
+nocache = true
+path = "GET /ws/chat"
+service = "chat"
+
+[[http.routes]]
+path = "GET /clock"
+service = "clock"
