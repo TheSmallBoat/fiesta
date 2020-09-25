@@ -1,5 +1,7 @@
 # chat over websocket_gateway, clock over http_gateway
 
+[The example's description](https://github.com/TheSmallBoat/fiesta/blob/master/examples/ws_chat_clock/comment.md)
+
 ```
 terminal 1:
 From fiesta/cmd/fiesta
