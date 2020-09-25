@@ -1,6 +1,6 @@
 # chat over websocket_gateway, clock over http_gateway
 
-[The example's description](https://github.com/TheSmallBoat/fiesta/blob/master/examples/ws_chat_clock/comment.md)
+[The example's description](https://github.com/TheSmallBoat/fiesta/blob/master/examples/ws_chat_clock/description.md)
 
 ```
 terminal 1:
