@@ -17,7 +17,7 @@ path = "GET /"
 static = "./public"
 ```
 
-The http gateway provides all static html by root,such as http://127.0.0.1/ equal http://127.0.0.1/index.html,that provide
+The http gateway provides all static html by root,such as http://127.0.0.1/ equal http://127.0.0.1/index.html, that provide
 by the file './public/index.html'.
 
 The http gateway just like a http server, so that can support all static files,such as images,css ...
@@ -33,7 +33,7 @@ conn = new WebSocket("ws://" + document.location.host + "/ws/chat");
 
 ```
 
-Can see it in the config_test.toml, /ws/chat websocket API can provide the chat micro-service to javascript client.
+Can see it in the config_test.toml, the websocket API path "/ws/chat" can provide the chat micro-service to javascript client.
 ```
 [[http.routes]]
 enablewebsocket = true
