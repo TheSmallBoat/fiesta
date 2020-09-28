@@ -8,6 +8,8 @@ but you are not sure whether the HTTP API gateway is still working, the clock mi
 to prove that there are different peer nodes on the backend that can work or have problems.
 
 ## config_test.toml
+To run a gateway node locally If want to know how to run html applicaiton, and need to create a public folder and put in files similar to websites to run, such as html, images, css. The scripting language can use JavaScript to establish a connection with the gateway's ws API through websocket.
+
 This configuration file can be used for running the gateway service locally for testing, 
 which bootstraps the remote peer nodes that own the public IP address.
 
